@@ -43,7 +43,9 @@ namespace video {
                     break;
             }
             if (!is_paused && decoder->get_next_frame((rgb_buffer.get()))) {
-                renderer->render_frame(rgb_buffer.get());
+                renderer->render_frame(rgb_buffer.get(),
+                                       decoder->get_current_pts(),
+                                       decoder->duration());
                 SDL_Delay(33);
             } else if (is_paused) {
                 SDL_Delay(100);
