@@ -1,6 +1,7 @@
 [requires]
+sdl/2.28.3
+sdl_ttf/2.24.0
 ffmpeg/4.4
-sdl/2.28.5@
 
 [generators]
 CMakeDeps
