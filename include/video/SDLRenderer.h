@@ -4,6 +4,8 @@
 #include <SDL2/SDL.h>
 #include <stdexcept>
 
+#include "PlayerEvent.h"
+
 namespace video {
 
     class SDLRenderer {
@@ -12,7 +14,7 @@ namespace video {
         ~SDLRenderer();
 
         void render_frame(const uint8_t* rgb_data);  // 渲染一帧 RGB 数据
-        bool handle_events();                        // 处理窗口事件
+        PlayerEvent handle_events();                 // 处理窗口事件
 
     private:
         SDL_Window* window = nullptr;
@@ -23,7 +25,7 @@ namespace video {
         uint16_t height;
     };
 
-} // namespace video_player
+} // namespace video
 
 
 #endif //SDLRENDERER_H

@@ -55,14 +55,24 @@ namespace video {
         SDL_RenderPresent(renderer);
     }
 
-    bool SDLRenderer::handle_events() {
+    PlayerEvent SDLRenderer::handle_events() {
         /* 处理关闭窗口等事件 */
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) return false;
+            if (event.type == SDL_QUIT) {
+                return PlayerEvent::Quit;
+            } else if (event.type == SDL_KEYDOWN) {
+                switch (event.key.keysym.sym) {
+                    case SDLK_SPACE : return PlayerEvent::PlayPause;
+                    case SDLK_LEFT : return PlayerEvent::SeekBackWard_5;
+                    case SDLK_RIGHT : return PlayerEvent::SeekForward_5;
+                    case SDLK_ESCAPE : return PlayerEvent::Quit;
+                    case SDLK_BACKSPACE : return PlayerEvent::Restart;
+                    default: break;
+                }
+            }
         }
-        return true;
+        return PlayerEvent::None;
     }
 
-} // namespace video_player
-
+} // namespace video

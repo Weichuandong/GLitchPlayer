@@ -23,6 +23,10 @@ namespace video {
             throw std::runtime_error("未找到视频流");
         }
 
+        // 保存视频流和时间基
+        video_stream = fmt_ctx->streams[video_stream_idx];
+        stream_time_base = video_stream->time_base;
+
         // 初始化解码器
         AVCodecParameters* codec_params = fmt_ctx->streams[video_stream_idx]->codecpar;
         const AVCodec* codec = avcodec_find_decoder(codec_params->codec_id);
@@ -60,6 +64,18 @@ namespace video {
             if (pkt.stream_index == video_stream_idx) {
                 avcodec_send_packet(codec_ctx, &pkt);
                 if (avcodec_receive_frame(codec_ctx, frame) == 0) {
+                    // 有效帧处理：计算并存储 PTS
+                    int64_t pts = frame->pts;
+                    if (pts == AV_NOPTS_VALUE) {
+                        pts = pkt.dts;  // 回退到解码时间戳
+                    }
+                    // 转换为秒并存储
+                    if (pts != AV_NOPTS_VALUE) {
+                        last_valid_pts = pts * av_q2d(stream_time_base);
+                    } else {
+                        // 无有效时间戳时使用解码器内部计数
+                        last_valid_pts = codec_ctx->frame_number * av_q2d(codec_ctx->time_base);
+                    }
                     // 转换为RGB
                     uint8_t* dst[] = {rgb_buffer};
                     int dst_linesize[] = {codec_ctx->width * 3};
@@ -82,6 +98,28 @@ namespace video {
 
     int FFmpegDecoder::height() const {
         return codec_ctx ? codec_ctx->height : 0; // 返回视频高度
+    }
+
+    double FFmpegDecoder::get_current_pts() const {
+        return last_valid_pts;
+    }
+
+    void FFmpegDecoder::seek(double seconds) {
+        if (!fmt_ctx || video_stream_idx < 0) return;
+
+        // 计算目标时间戳（基于流的时间基）
+        int64_t target_pts = static_cast<int64_t>(seconds / av_q2d(fmt_ctx->streams[video_stream_idx]->time_base));
+
+        // 清空解码器缓冲区
+        avcodec_flush_buffers(codec_ctx);
+
+        // 执行 Seek（AVSEEK_FLAG_BACKWARD 确保跳到关键帧）
+        av_seek_frame(fmt_ctx, video_stream_idx, target_pts, AVSEEK_FLAG_BACKWARD);
+    }
+
+    double FFmpegDecoder::duration() const {
+        if (!fmt_ctx || video_stream_idx < 0) return 0.0;
+        return fmt_ctx->duration * av_q2d(AV_TIME_BASE_Q);
     }
 
 } // namespace video
