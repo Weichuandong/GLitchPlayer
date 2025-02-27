@@ -72,9 +72,11 @@ namespace video {
                     // 转换为秒并存储
                     if (pts != AV_NOPTS_VALUE) {
                         last_valid_pts = pts * av_q2d(stream_time_base);
+                        LOG_DEBUG("last_valid_pts = {}", last_valid_pts);
                     } else {
                         // 无有效时间戳时使用解码器内部计数
                         last_valid_pts = codec_ctx->frame_number * av_q2d(codec_ctx->time_base);
+                        LOG_DEBUG("last_valid_pts = {}", last_valid_pts);
                     }
                     // 转换为RGB
                     uint8_t* dst[] = {rgb_buffer};
@@ -122,4 +124,46 @@ namespace video {
         return fmt_ctx->duration * av_q2d(AV_TIME_BASE_Q);
     }
 
+    bool FFmpegDecoder::get_next_frame(YUVData& yuv_data) {
+        AVFrame* frame = av_frame_alloc();
+        AVPacket pkt;
+
+        while (av_read_frame(fmt_ctx, &pkt) >= 0) {
+            if (pkt.stream_index == video_stream_idx) {
+                avcodec_send_packet(codec_ctx, &pkt);
+                if (avcodec_receive_frame(codec_ctx, frame) == 0) {
+                    // 有效帧处理：计算并存储 PTS
+                    int64_t pts = frame->pts;
+                    if (pts == AV_NOPTS_VALUE) {
+                        pts = pkt.dts;  // 回退到解码时间戳
+                    }
+                    // 转换为秒并存储
+                    if (pts != AV_NOPTS_VALUE) {
+                        last_valid_pts = pts * av_q2d(stream_time_base);
+//                        LOG_DEBUG("last_valid_pts = {}", last_valid_pts);
+                    } else {
+                        // 无有效时间戳时使用解码器内部计数
+                        last_valid_pts = codec_ctx->frame_number * av_q2d(codec_ctx->time_base);
+//                        LOG_DEBUG("last_valid_pts = {}", last_valid_pts);
+                    }
+
+                    // 假设解码格式为 YUV420P
+                    yuv_data.y_plane = frame->data[0];
+                    yuv_data.u_plane = frame->data[1];
+                    yuv_data.v_plane = frame->data[2];
+                    yuv_data.y_width = frame->width;
+                    yuv_data.y_height = frame->height;
+                    yuv_data.uv_width = frame->width / 2;
+                    yuv_data.uv_height = frame->height / 2;
+
+                    av_frame_unref(frame);
+                    av_packet_unref(&pkt);
+                    return true;
+                }
+            }
+            av_packet_unref(&pkt);
+        }
+        av_frame_free(&frame);
+        return false;
+    }
 } // namespace video

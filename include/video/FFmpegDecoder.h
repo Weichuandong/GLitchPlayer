@@ -3,6 +3,7 @@
 
 #include <string>
 #include <stdexcept>
+#include "logger.h"
 
 extern "C" {
 #include <libavformat/avformat.h>
@@ -14,9 +15,19 @@ namespace video {
 
     class FFmpegDecoder {
     public:
+
+        struct YUVData {
+            const uint8_t* y_plane;
+            const uint8_t* u_plane;
+            const uint8_t* v_plane;
+            int y_width, y_height;
+            int uv_width, uv_height;
+        };
+
         FFmpegDecoder(const std::string& filepath);
         ~FFmpegDecoder();
 
+        bool get_next_frame(YUVData& yuv_data);   // 获取下一帧 YUV 数据
         bool get_next_frame(uint8_t* rgb_buffer); // 获取下一帧 RGB 数据
         int width() const;  // 视频宽度
         int height() const; // 视频高度
