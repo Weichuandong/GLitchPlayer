@@ -70,6 +70,7 @@ void main() {
         glDeleteProgram(program);
         SDL_GL_DeleteContext(gl_context);
         SDL_DestroyWindow(window);
+        SDL_Quit();
     }
 
     void GLRenderer::init_gl() {
@@ -93,7 +94,7 @@ void main() {
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
         // 位置属性
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)nullptr);
         glEnableVertexAttribArray(0);
         // 纹理坐标属性
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
@@ -105,11 +106,11 @@ void main() {
 
     void GLRenderer::compile_shaders() {
         GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertex_shader, 1, &vs_source, NULL);
+        glShaderSource(vertex_shader, 1, &vs_source, nullptr);
         glCompileShader(vertex_shader);
 
         GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragment_shader, 1, &fs_source, NULL);
+        glShaderSource(fragment_shader, 1, &fs_source, nullptr);
         glCompileShader(fragment_shader);
 
         program = glCreateProgram();

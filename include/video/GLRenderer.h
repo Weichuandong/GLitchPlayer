@@ -10,6 +10,8 @@
 #include <SDL2/SDL.h>
 #include <functional>
 
+#include "logger.h"
+
 namespace video {
 
     class GLRenderer {

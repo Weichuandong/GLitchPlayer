@@ -23,9 +23,8 @@ namespace video {
             throw std::runtime_error("未找到视频流");
         }
 
-        // 保存视频流和时间基
-        video_stream = fmt_ctx->streams[video_stream_idx];
-        stream_time_base = video_stream->time_base;
+        // 保存时间基
+        stream_time_base = fmt_ctx->streams[video_stream_idx]->time_base;
 
         // 初始化解码器
         AVCodecParameters* codec_params = fmt_ctx->streams[video_stream_idx]->codecpar;
@@ -140,23 +139,15 @@ namespace video {
                     // 转换为秒并存储
                     if (pts != AV_NOPTS_VALUE) {
                         last_valid_pts = pts * av_q2d(stream_time_base);
-//                        LOG_DEBUG("last_valid_pts = {}", last_valid_pts);
                     } else {
                         // 无有效时间戳时使用解码器内部计数
                         last_valid_pts = codec_ctx->frame_number * av_q2d(codec_ctx->time_base);
-//                        LOG_DEBUG("last_valid_pts = {}", last_valid_pts);
                     }
 
                     // 假设解码格式为 YUV420P
-                    yuv_data.y_plane = frame->data[0];
-                    yuv_data.u_plane = frame->data[1];
-                    yuv_data.v_plane = frame->data[2];
-                    yuv_data.y_width = frame->width;
-                    yuv_data.y_height = frame->height;
-                    yuv_data.uv_width = frame->width / 2;
-                    yuv_data.uv_height = frame->height / 2;
+                    yuv_data.frame = av_frame_clone(frame);
 
-                    av_frame_unref(frame);
+                    av_frame_free(&frame);
                     av_packet_unref(&pkt);
                     return true;
                 }

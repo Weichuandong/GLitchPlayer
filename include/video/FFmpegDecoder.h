@@ -17,14 +17,19 @@ namespace video {
     public:
 
         struct YUVData {
-            const uint8_t* y_plane;
-            const uint8_t* u_plane;
-            const uint8_t* v_plane;
-            int y_width, y_height;
-            int uv_width, uv_height;
+            AVFrame* frame;
+//            const uint8_t* y_plane;
+//            const uint8_t* u_plane;
+//            const uint8_t* v_plane;
+//            int y_width, y_height;
+//            int uv_width, uv_height;
+
+            ~YUVData() {
+                if (frame) av_frame_free(&frame);
+            }
         };
 
-        FFmpegDecoder(const std::string& filepath);
+        explicit FFmpegDecoder(const std::string& filepath);
         ~FFmpegDecoder();
 
         bool get_next_frame(YUVData& yuv_data);   // 获取下一帧 YUV 数据
@@ -43,7 +48,6 @@ namespace video {
 
         double last_valid_pts = 0.0;     // 当前帧 PTS（秒为单位）
         AVRational stream_time_base;     // 视频流时间基
-        AVStream* video_stream = nullptr;// 视频流指针
     };
 
 } // namespace video
