@@ -18,11 +18,6 @@ namespace video {
 
         struct YUVData {
             AVFrame* frame;
-//            const uint8_t* y_plane;
-//            const uint8_t* u_plane;
-//            const uint8_t* v_plane;
-//            int y_width, y_height;
-//            int uv_width, uv_height;
 
             ~YUVData() {
                 if (frame) av_frame_free(&frame);
@@ -37,7 +32,7 @@ namespace video {
         int width() const;  // 视频宽度
         int height() const; // 视频高度
         double get_current_pts() const; //获取当前时间戳
-        void seek(double seconds);      //跳转到指定时间
+        bool seek(double seconds);       //跳转到指定时间
         double duration() const;        //获取视频总时长
 
     private:

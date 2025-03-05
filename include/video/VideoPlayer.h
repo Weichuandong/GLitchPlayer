@@ -17,15 +17,16 @@ namespace video {
 
     private:
         std::unique_ptr<FFmpegDecoder> decoder;
-        // std::unique_ptr<SDLRenderer> renderer;
         std::unique_ptr<GLRenderer> gl_renderer;
         std::unique_ptr<uint8_t[]> rgb_buffer;
 
         void handleKeyPress(SDL_Keycode key); // 新增键盘处理函数
+        void handleSeek(float ration);
 
         bool is_paused = false; // 暂停状态
         double duration = 0.0;  // 视频总时长
         bool shouldQuit = false; //是否退出
+        bool shouldDebug = true; //调试信息显示开关
     };
 
 } // namespace video

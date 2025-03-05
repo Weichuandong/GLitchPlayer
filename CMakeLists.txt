@@ -17,7 +17,7 @@ find_package(SDL2 REQUIRED)
 find_package(SDL2_ttf REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(spdlog REQUIRED)
-
+find_package(glm REQUIRED)
 
 # 添加可执行文件
 add_executable(${PROJECT_NAME}
@@ -31,21 +31,26 @@ add_executable(${PROJECT_NAME}
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
-        ${CMAKE_SOURCE_DIR}/include
-        ${SDL2_INCLUDE_DIRS}
-        ${ffmpeg_INCLUDE_DIRS}
-        ${SDL2_ttf_INCLUDE_DIRS}
-        ${glew_INCLUDE_DIRS}
-        ${spdlog_INCLUDE_DIRS}
+         ${CMAKE_SOURCE_DIR}/include
+#        ${SDL2_INCLUDE_DIRS}
+#        ${ffmpeg_INCLUDE_DIRS}
+#        ${SDL2_ttf_INCLUDE_DIRS}
+#        ${glew_INCLUDE_DIRS}
+#        ${spdlog_INCLUDE_DIRS}
 )
 
-# macOS 需要额外链接 CoreFoundation 和 FFmpeg 的特定库
 target_link_libraries(${PROJECT_NAME} PRIVATE
-        ${SDL2_LIBRARIES}
-        ${SDL2_ttf_LIBRARIES}
-        ${ffmpeg_LIBRARIES}
-        ${glew_LIBRARIES}
-        ${spdlog_LIBRARIES}
+#        ${SDL2_LIBRARIES}
+#        ${SDL2_ttf_LIBRARIES}
+#        ${ffmpeg_LIBRARIES}
+#        ${glew_LIBRARIES}
+#        ${spdlog_LIBRARIES}
+        sdl_ttf::sdl_ttf
+        SDL2::SDL2main
+        ffmpeg::ffmpeg
+        GLEW::GLEW
+        spdlog::spdlog
+        glm::glm
         "-framework CoreFoundation"  # 必须添加
 )
 
