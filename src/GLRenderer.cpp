@@ -98,7 +98,7 @@ void main() {
         }
 
         // 加载字体 - 确保路径正确，这里使用默认大小16pt
-        font = TTF_OpenFont("./fonts/Roboto-Regular.ttf", 16);
+        font = TTF_OpenFont("./fonts/Roboto-Regular.ttf", 14);
         if (!font) {
             LOG_ERROR("无法加载字体: {}", TTF_GetError());
             return;
@@ -550,9 +550,16 @@ void main() {
         int w, h;
         SDL_GetWindowSize(window, &w, &h);
 
+        // 计算进度条位置
+        float bar_y = h - progress_style.height - 20.0f;
+
+//        // 在渲染文本前先渲染一个半透明背景矩形
+//        render_colored_rect(5.0f, bar_y + progress_style.height + 8.0f,
+//                            210.0f, 25.0f, glm::vec4(0.0f, 0.0f, 0.0f, 0.5f));
+
         // 格式化并渲染时间文本
         std::string time_text = format_time(current_time) + "/" + format_time(total_time);
-        render_text(time_text, 10.0f, h - progress_style.height - 30.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+        render_text(time_text, 10.0f, bar_y + progress_style.height + 5.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
         // 添加调试坐标系参考
         if (show_debug) {
