@@ -27,8 +27,15 @@ namespace video {
 
         using EventCallback = std::function<void(SDL_KeyCode)>;
         void setEventCallback(const EventCallback& callback);
+
         using SeekCallback = std::function<void(float)>;
         void setSeekCallback(const SeekCallback& callback);
+
+        using FrameStepCallback = std::function<void(bool)>;
+        void setFrameStepCallback(const FrameStepCallback& callback);
+        // 添加获取暂停状态的回调
+        using IsPausedCallback = std::function<bool()>;
+        void setIsPausedCallback(const IsPausedCallback& callback);
 
         void render_ui(float progress, double current_time, double total_time,
                        bool is_paused, bool show_debug);
@@ -56,6 +63,8 @@ namespace video {
 
         EventCallback eventCallback;
         SeekCallback seekCallback;
+        FrameStepCallback frameStepCallback;
+        IsPausedCallback isPausedCallback;
 
         // ui渲染相关资源
         GLuint ui_vao = 0;

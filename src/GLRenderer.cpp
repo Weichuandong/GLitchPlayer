@@ -640,11 +640,22 @@ void main() {
             switch (event.type) {
                 case SDL_QUIT:
                     return false;
-                case SDL_KEYDOWN:
+                case SDL_KEYDOWN: {
                     if (eventCallback) {
                         eventCallback(static_cast<SDL_KeyCode>(event.key.keysym.sym));
                     }
+
+                    // 检查是否是方向键且播放器已暂停
+                    if (isPausedCallback() && frameStepCallback) {
+                        if (event.key.keysym.sym == SDLK_RIGHT) {
+                            frameStepCallback(true); // 下一帧
+                        }
+                        else if (event.key.keysym.sym == SDLK_LEFT) {
+                            frameStepCallback(false); // 上一帧
+                        }
+                    }
                     break;
+                }
                 case SDL_MOUSEBUTTONDOWN:{
                     if (event.button.button == SDL_BUTTON_LEFT) {
                         int x, y;
@@ -718,6 +729,15 @@ void main() {
         if (error != GL_NO_ERROR) {
             LOG_ERROR("渲染矩形出错: {}", error);
         }
+    }
+
+    // 添加设置帧步进回调的方法
+    void GLRenderer::setFrameStepCallback(const FrameStepCallback& callback) {
+        frameStepCallback = callback;
+    }
+
+    void GLRenderer::setIsPausedCallback(const IsPausedCallback& callback) {
+        isPausedCallback = callback;
     }
 
 } // namespace video

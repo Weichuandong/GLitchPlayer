@@ -31,7 +31,7 @@ namespace video {
         bool get_next_frame(uint8_t* rgb_buffer); // 获取下一帧 RGB 数据
         int width() const;  // 视频宽度
         int height() const; // 视频高度
-        double get_current_pts() const; //获取当前时间戳
+        double get_current_pts() const;  //获取当前时间戳
         bool seek(double seconds);       //跳转到指定时间
         double duration() const;        //获取视频总时长
 

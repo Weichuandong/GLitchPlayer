@@ -20,6 +20,18 @@ namespace video {
             this->handleSeek(ratio);
         });
 
+        gl_renderer->setFrameStepCallback([this](bool forward) {
+            if (forward) {
+                step_forward_frame();
+            } else {
+                step_back_frame();
+            }
+        });
+
+        gl_renderer->setIsPausedCallback([this](){
+            return is_paused;
+        });
+
         LOG_INFO("初始化播放器: {} ({}x{}), 时长: {:.2f}s",
                  filepath,
                  decoder->width(),
@@ -70,15 +82,19 @@ namespace video {
             }
 
             case SDLK_LEFT: {
-                double current_time = decoder->get_current_pts();
-                decoder->seek(std::max(0.0, current_time - 5.0));
-                LOG_INFO("duration = {}, current_time = {}, 后退5S", duration, current_time);
+                if (!is_paused) {
+                    double current_time = decoder->get_current_pts();
+                    decoder->seek(std::max(0.0, current_time - 5.0));
+                    LOG_INFO("duration = {}, current_time = {}, 后退5S", duration, current_time);
+                }
                 break;
             }
             case SDLK_RIGHT: {
-                double current_time = decoder->get_current_pts();
-                decoder->seek(std::min(duration, current_time + 5.0));
-                LOG_INFO("duration = {}, current_time = {}, 前进5S", duration, current_time);
+                if (!is_paused) {
+                    double current_time = decoder->get_current_pts();
+                    decoder->seek(std::min(duration, current_time + 5.0));
+                    LOG_INFO("duration = {}, current_time = {}, 前进5S", duration, current_time);
+                }
                 break;
             }
             case SDLK_ESCAPE: {
@@ -93,6 +109,60 @@ namespace video {
             }
             default:
                 break;
+        }
+    }
+
+    void VideoPlayer::step_forward_frame() {
+        if (!is_paused) return;
+
+        FFmpegDecoder::YUVData yuvData{};
+        // 解码一帧并显示
+        if (decoder->get_next_frame(yuvData)) {
+
+            // 渲染帧
+            gl_renderer->render_frame(
+                    yuvData.frame->data[0], yuvData.frame->data[1], yuvData.frame->data[2],
+                    yuvData.frame->width, yuvData.frame->height,
+                    yuvData.frame->linesize[0], yuvData.frame->linesize[1]
+                    );
+
+            // 更新UI
+            gl_renderer->render_ui(decoder->get_current_pts() / duration,
+                                   decoder->get_current_pts(),
+                                   duration,
+                                   is_paused,
+                                   false);
+        }
+    }
+
+    void VideoPlayer::step_back_frame() {
+        // 计算上一帧的大致位置（当前时间减去一帧的持续时间）
+        double frame_duration = 1.0 / decoder->get_current_pts();
+        double target_time = decoder->get_current_pts() - frame_duration;
+
+        if (target_time < 0) target_time = 0;
+
+        // 跳转到目标位置
+        decoder->seek(target_time);
+
+        // 解码并显示该帧
+        FFmpegDecoder::YUVData yuvData{};
+        // 解码一帧并显示
+        if (decoder->get_next_frame(yuvData)) {
+
+            // 渲染帧
+            gl_renderer->render_frame(
+                    yuvData.frame->data[0], yuvData.frame->data[1], yuvData.frame->data[2],
+                    yuvData.frame->width, yuvData.frame->height,
+                    yuvData.frame->linesize[0], yuvData.frame->linesize[1]
+            );
+
+            // 更新UI
+            gl_renderer->render_ui(decoder->get_current_pts() / duration,
+                                   decoder->get_current_pts(),
+                                   duration,
+                                   is_paused,
+                                   false);
         }
     }
 
