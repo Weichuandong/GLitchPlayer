@@ -105,8 +105,8 @@ namespace video {
         return last_valid_pts;
     }
 
-    void FFmpegDecoder::seek(double seconds) {
-        if (!fmt_ctx || video_stream_idx < 0) return;
+    bool FFmpegDecoder::seek(double seconds) {
+        if (!fmt_ctx || video_stream_idx < 0) return false;
 
         // 计算目标时间戳（基于流的时间基）
         int64_t target_pts = static_cast<int64_t>(seconds / av_q2d(fmt_ctx->streams[video_stream_idx]->time_base));
@@ -115,7 +115,15 @@ namespace video {
         avcodec_flush_buffers(codec_ctx);
 
         // 执行 Seek（AVSEEK_FLAG_BACKWARD 确保跳到关键帧）
-        av_seek_frame(fmt_ctx, video_stream_idx, target_pts, AVSEEK_FLAG_BACKWARD);
+        int ret = av_seek_frame(fmt_ctx, video_stream_idx, target_pts, AVSEEK_FLAG_BACKWARD);
+
+        if (ret < 0) {
+            LOG_ERROR("Seek failed: {}", av_err2str(ret));
+            return false;
+        }
+
+        last_valid_pts = target_pts;
+        return true;
     }
 
     double FFmpegDecoder::duration() const {

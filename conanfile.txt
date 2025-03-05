@@ -4,6 +4,7 @@ sdl_ttf/2.24.0
 ffmpeg/4.4
 glew/2.2.0
 spdlog/1.14.0
+glm/1.0.1
 
 [generators]
 CMakeDeps

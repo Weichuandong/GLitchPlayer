@@ -7,7 +7,6 @@
 namespace video {
     VideoPlayer::VideoPlayer(const std::string& filepath)
         : decoder(std::make_unique<FFmpegDecoder>(filepath)),
-          //renderer(std::make_unique<SDLRenderer>(decoder->width(), decoder->height())),
           gl_renderer(std::make_unique<GLRenderer>(decoder->width(), decoder->height())),
           rgb_buffer(new uint8_t[decoder->width() * decoder->height() * 3]) {
         // 视频时长信息
@@ -16,6 +15,17 @@ namespace video {
         gl_renderer->setEventCallback([this](SDL_Keycode key) {
             this->handleKeyPress(key);
         });
+
+        gl_renderer->setSeekCallback([this](float ratio) {
+            this->handleSeek(ratio);
+        });
+
+        LOG_INFO("初始化播放器: {} ({}x{}), 时长: {:.2f}s",
+                 filepath,
+                 decoder->width(),
+                 decoder->height(),
+                 duration
+        );
     }
 
     void VideoPlayer::run() {
@@ -23,10 +33,17 @@ namespace video {
         while (!shouldQuit && gl_renderer->handle_events()) {
             FFmpegDecoder::YUVData yuvData{};
 
-            if (!is_paused && decoder->get_next_frame(yuvData)) {
+            bool frame_available = !is_paused && decoder->get_next_frame(yuvData);
+            if (frame_available) {
                 gl_renderer->render_frame(yuvData.frame->data[0], yuvData.frame->data[1], yuvData.frame->data[2],
                                           yuvData.frame->width, yuvData.frame->height,
-                                          yuvData.frame->width / 2, yuvData.frame->height / 2);
+                                          yuvData.frame->linesize[0], yuvData.frame->linesize[1]);
+
+                gl_renderer->render_ui(decoder->get_current_pts() / duration,
+                                       decoder->get_current_pts(),
+                                       duration,
+                                       is_paused,
+                                       false);
                 SDL_Delay(33);
             } else if (is_paused) {
                 SDL_Delay(100);
@@ -34,6 +51,13 @@ namespace video {
                 break;
             }
         }
+    }
+
+    void VideoPlayer::handleSeek(float ration) {
+        const double target_time = ration * duration;
+        decoder->seek(target_time);
+        is_paused = false;
+        LOG_DEBUG("Seek to: {:.2f}s (ration={})", target_time, ration);
     }
 
     void VideoPlayer::handleKeyPress(SDL_Keycode key) {
