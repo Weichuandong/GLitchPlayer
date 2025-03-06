@@ -7,6 +7,9 @@
 #include "video/SDLRenderer.h"
 #include "video/GLRenderer.h"
 #include "logger.h"
+#include "video/filters/FlipFilter.h"
+#include "video/filters/MirrorFilter.h"
+#include "video/filters/GrayscaleFilter.h"
 
 namespace video {
 

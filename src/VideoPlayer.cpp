@@ -32,6 +32,15 @@ namespace video {
             return is_paused;
         });
 
+        // 注册滤镜
+        decoder->getFilterManager().registerFilter(std::make_shared<FlipFilter>(FlipFilter::VERTICAL));
+        decoder->getFilterManager().registerFilter(std::make_shared<FlipFilter>(FlipFilter::HORIZONTAL));
+        decoder->getFilterManager().registerFilter(std::make_shared<MirrorFilter>(MirrorFilter::HORIZONTAL));
+        decoder->getFilterManager().registerFilter(std::make_shared<MirrorFilter>(MirrorFilter::VERTICAL));
+        decoder->getFilterManager().registerFilter(std::make_shared<MirrorFilter>(MirrorFilter::QUAD));
+        decoder->getFilterManager().registerFilter(std::make_shared<GrayscaleFilter>(1.0f));
+        decoder->getFilterManager().registerFilter(std::make_shared<GrayscaleFilter>(0.5f));
+
         LOG_INFO("初始化播放器: {} ({}x{}), 时长: {:.2f}s",
                  filepath,
                  decoder->width(),
@@ -105,6 +114,67 @@ namespace video {
             case SDLK_BACKSPACE: {
                 decoder->seek(0.0);
                 LOG_INFO("从头播放");
+                break;
+            }
+            case SDLK_1: {
+                if (decoder->getFilterManager().isFilterExists("vflip")) {
+                    decoder->getFilterManager().deactivateFilter("vflip");
+                } else {
+                    decoder->getFilterManager().activateFilter("vflip");
+                }
+                break;
+            }
+            case SDLK_2: {
+                if (decoder->getFilterManager().isFilterExists("hflip")) {
+                    decoder->getFilterManager().deactivateFilter("hflip");
+                } else {
+                    decoder->getFilterManager().activateFilter("hflip");
+                }
+                break;
+            }
+            case SDLK_3: {
+                if (decoder->getFilterManager().isFilterExists("hmirror")) {
+                    decoder->getFilterManager().deactivateFilter("hmirror");
+                } else {
+                    decoder->getFilterManager().activateFilter("hmirror");
+                }
+                break;
+            }
+            case SDLK_4: {
+                if (decoder->getFilterManager().isFilterExists("vmirror")) {
+                    decoder->getFilterManager().deactivateFilter("vmirror");
+                } else {
+                    decoder->getFilterManager().activateFilter("vmirror");
+                }
+                break;
+            }
+            case SDLK_5: {
+                if (decoder->getFilterManager().isFilterExists("quadmirror")) {
+                    decoder->getFilterManager().deactivateFilter("quadmirror");
+                } else {
+                    decoder->getFilterManager().activateFilter("quadmirror");
+                }
+                break;
+            }
+            case SDLK_6: {
+                if (decoder->getFilterManager().isFilterExists("gray1.000000")) {
+                    decoder->getFilterManager().deactivateFilter("gray1.000000");
+                } else {
+                    decoder->getFilterManager().activateFilter("gray1.000000");
+                }
+                break;
+            }
+            case SDLK_7: {
+                if (decoder->getFilterManager().isFilterExists("gray0.500000")) {
+                    decoder->getFilterManager().deactivateFilter("gray0.500000");
+                } else {
+                    decoder->getFilterManager().activateFilter("gray0.500000");
+                }
+                break;
+            }
+
+            case SDLK_0: {
+                decoder->getFilterManager().deactivateAllFilter();
                 break;
             }
             default:

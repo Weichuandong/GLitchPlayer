@@ -4,6 +4,7 @@
 #include <string>
 #include <stdexcept>
 #include "logger.h"
+#include "video/filters/FilterManager.h"
 
 extern "C" {
 #include <libavformat/avformat.h>
@@ -35,6 +36,8 @@ namespace video {
         bool seek(double seconds);       //跳转到指定时间
         double duration() const;        //获取视频总时长
 
+        FilterManager& getFilterManager() { return filterManager; }
+
     private:
         AVFormatContext* fmt_ctx = nullptr;
         AVCodecContext* codec_ctx = nullptr;
@@ -43,6 +46,9 @@ namespace video {
 
         double last_valid_pts = 0.0;     // 当前帧 PTS（秒为单位）
         AVRational stream_time_base;     // 视频流时间基
+
+        // 滤镜管理
+        FilterManager filterManager;
     };
 
 } // namespace video

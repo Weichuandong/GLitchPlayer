@@ -19,6 +19,10 @@ find_package(GLEW REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(glm REQUIRED)
 
+add_definitions(-D__STDC_CONSTANT_MACROS)
+add_definitions(-D__STDC_LIMIT_MACROS)
+add_definitions(-D__STDC_FORMAT_MACROS)
+
 # 添加可执行文件
 add_executable(${PROJECT_NAME}
         src/play.cpp
@@ -28,23 +32,17 @@ add_executable(${PROJECT_NAME}
         src/TextRenderer.cpp
         src/GLRenderer.cpp
         src/logger.cpp
+        src/filters/FilterManager.cpp
+        src/filters/FlipFilter.cpp
+        src/filters/GrayscaleFilter.cpp
+        src/filters/MirrorFilter.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
          ${CMAKE_SOURCE_DIR}/include
-#        ${SDL2_INCLUDE_DIRS}
-#        ${ffmpeg_INCLUDE_DIRS}
-#        ${SDL2_ttf_INCLUDE_DIRS}
-#        ${glew_INCLUDE_DIRS}
-#        ${spdlog_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-#        ${SDL2_LIBRARIES}
-#        ${SDL2_ttf_LIBRARIES}
-#        ${ffmpeg_LIBRARIES}
-#        ${glew_LIBRARIES}
-#        ${spdlog_LIBRARIES}
         sdl_ttf::sdl_ttf
         SDL2::SDL2main
         ffmpeg::ffmpeg
