@@ -7,6 +7,9 @@
 #include "video/SDLRenderer.h"
 #include "video/GLRenderer.h"
 #include "logger.h"
+#include "video/filters/FlipFilter.h"
+#include "video/filters/MirrorFilter.h"
+#include "video/filters/GrayscaleFilter.h"
 
 namespace video {
 
@@ -27,6 +30,10 @@ namespace video {
         double duration = 0.0;  // 视频总时长
         bool shouldQuit = false; //是否退出
         bool shouldDebug = true; //调试信息显示开关
+
+        // 前进后退逻辑
+        void step_forward_frame();
+        void step_back_frame();
     };
 
 } // namespace video

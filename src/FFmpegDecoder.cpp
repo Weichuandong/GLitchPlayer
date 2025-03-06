@@ -45,6 +45,9 @@ namespace video {
             codec_ctx->width, codec_ctx->height, AV_PIX_FMT_RGB24,
             SWS_BILINEAR, nullptr, nullptr, nullptr
         );
+
+        // 滤镜管理
+        filterManager.init(codec_ctx->width, codec_ctx->height, codec_ctx->pix_fmt);
     }
 
     FFmpegDecoder::~FFmpegDecoder() {
@@ -152,9 +155,12 @@ namespace video {
                         last_valid_pts = codec_ctx->frame_number * av_q2d(codec_ctx->time_base);
                     }
 
-                    // 假设解码格式为 YUV420P
-                    yuv_data.frame = av_frame_clone(frame);
+                    AVFrame* filterFrame = filterManager.applyFilters(frame);
+                    yuv_data.frame = av_frame_clone(filterFrame);
 
+                    if (filterFrame != frame) {
+                        av_frame_free(&filterFrame);
+                    }
                     av_frame_free(&frame);
                     av_packet_unref(&pkt);
                     return true;
