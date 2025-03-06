@@ -644,7 +644,6 @@ void main() {
                     if (eventCallback) {
                         eventCallback(static_cast<SDL_KeyCode>(event.key.keysym.sym));
                     }
-
                     // 检查是否是方向键且播放器已暂停
                     if (isPausedCallback() && frameStepCallback) {
                         if (event.key.keysym.sym == SDLK_RIGHT) {
@@ -677,12 +676,30 @@ void main() {
                     }
                     break;
                 }
-                case SDL_WINDOWEVENT:
+                case SDL_WINDOWEVENT: {
+                    if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
+                        int new_width = event.window.data1;
+                        int new_height = event.window.data2;
+                        glViewport(0, 0, new_width, new_height);
+                        update_projection(new_width, new_height);
+                    }
                     break;
+                }
             }
         }
         return true;
     }
+
+    void GLRenderer::update_projection(int width, int height) {
+        glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f);
+        glUseProgram(program);
+        glUniformMatrix4fv(glGetUniformLocation(program, "projection"), 1, GL_FALSE, &projection[0][0]);
+        glUseProgram(text_program);
+        glUniformMatrix4fv(glGetUniformLocation(text_program, "projection"), 1, GL_FALSE, &projection[0][0]);
+        glUseProgram(ui_program);
+        glUniformMatrix4fv(glGetUniformLocation(ui_program, "projection"), 1, GL_FALSE, &projection[0][0]);
+    }
+
 
     void GLRenderer::setEventCallback(const EventCallback& callback) {
         eventCallback = callback; // 绑定回调函数

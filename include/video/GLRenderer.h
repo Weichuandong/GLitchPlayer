@@ -54,6 +54,9 @@ namespace video {
         std::string format_time(double seconds);
         void render_text(const std::string& text, float x, float y, const glm::vec4& color);
 
+        // 窗口大小调整
+        void update_projection(int width, int height);
+
         SDL_Window* window = nullptr;
         SDL_GLContext gl_context = nullptr;
 
