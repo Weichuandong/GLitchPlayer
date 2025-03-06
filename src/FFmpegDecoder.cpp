@@ -156,13 +156,11 @@ namespace video {
                     }
 
                     AVFrame* filterFrame = filterManager.applyFilters(frame);
-                    if (filterFrame && filterFrame != frame) {
-                        yuv_data.frame = av_frame_clone(filterFrame);
-                    } else {
-                        // 假设解码格式为 YUV420P
-                        yuv_data.frame = av_frame_clone(frame);
-                    }
+                    yuv_data.frame = av_frame_clone(filterFrame);
 
+                    if (filterFrame != frame) {
+                        av_frame_free(&filterFrame);
+                    }
                     av_frame_free(&frame);
                     av_packet_unref(&pkt);
                     return true;
